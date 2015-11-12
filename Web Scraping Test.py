@@ -21,5 +21,16 @@ print(soup.prettify()) #Prints page contents
 
 # In[ ]:
 
+#Soup stores the page as a dictionary with tags for retrieval. 
+#For example, the first div tag on the page is:
+soup.div
+
+#Or, to get the first link out of the page
+soup.a
+
+#To find all links on the page
+soup.find_all('a')
+
+
 
 
