@@ -1,8 +1,7 @@
 import pandas as pd
 data_frame = pd.read_csv('Hotel Data.csv')
-data_frame = data_frame[1:]
-data_frame.columns = ['Hotel', 'Bad Link','Rating','Number Reviews','Link','']
-data_frame = data_frame.drop('Bad Link', 1)
-data_frame = data_frame.drop('', 1)
-links = data_frame['Link'].tolist()
-links
+data_frame = data_frame[0:]
+data_frame.columns = ['Count','Hotel', 'Hotel Link','Number Reviews','Review Link','Rating','Rank']
+data_frame = data_frame.drop('Count', 1)
+links = data_frame['Review Link'].tolist()
+len(links)
