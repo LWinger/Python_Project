@@ -5,3 +5,11 @@ data_frame.columns = ['Count','Hotel', 'Hotel Link','Number Reviews','Review Lin
 data_frame = data_frame.drop('Count', 1)
 links = data_frame['Review Link'].tolist()
 len(links)
+
+#Assignment of Links
+#links_1=links[0:30] #Laura, Haoxin, Emma (done)
+#links_1=links[30:40] #Haoxin
+#links_1=links[40:50] #Srikar
+#links_1=links[50:60] #Emma
+#links_1=links[60:70] #Laura
+#links_1=links[70:80] #Haoxin
