@@ -4,4 +4,5 @@ data_frame = data_frame[1:]
 data_frame.columns = ['Hotel', 'Bad Link','Rating','Number Reviews','Link','']
 data_frame = data_frame.drop('Bad Link', 1)
 data_frame = data_frame.drop('', 1)
-print(data_frame)
+links = data_frame['Link'].tolist()
+links
