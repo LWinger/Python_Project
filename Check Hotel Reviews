@@ -29,6 +29,9 @@ reviews_df.head(10)
 #reviews_df['Help Count'] = reviews_df['Help Count'].astype(int)
 #reviews_df['Hotel Count'] = reviews_df['Hotel Count'].astype(int)
 
+#Drop unwanted rows (for 'NaN' in Help Count)
+reviews_df = reviews_df.drop(reviews_df[pd.isnull(reviews_df['Help Count'])].index)
+
 #print(reviews_df.dtypes)
 
 #count number of reviews scrapped
