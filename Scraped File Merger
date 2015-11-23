@@ -1,0 +1,18 @@
+import pandas as pd
+import os
+import numpy as np
+import glob
+
+d = os.getcwd()
+#add a folder called "Scraped Files" to your working directory and add all your individual scraped files
+path = d + '/Scraped Files'
+
+allFiles = glob.glob(path + "/*.csv")
+frame = pd.DataFrame()
+list_ = []
+for file_ in allFiles:
+    df = pd.read_csv(file_,index_col=None, header=0)
+    list_.append(df)
+    frame = pd.concat(list_,axis =0)
+
+frame.to_csv('Review Data.csv')
