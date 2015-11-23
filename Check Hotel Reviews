@@ -18,19 +18,34 @@ print(hotels_df.dtypes)
 #clean & merge Reviews Data Frame
 #if error reading file then maybe extra columns in line identified in last line of error message
 reviews_df = pd.read_csv('Review Data.csv')
-reviews_df.head(10)
+#print(reviews_df.head(10))
 
 #reviews_df = reviews_df.ix[:,0:11] #sometimes python reads in additional empty columns so this prevents that
-reviews_df.columns = ['Index','Address','Help Count','Hotel Count','Location','Hotel Name','Rating','Rating Date','Review','Review Count','Review Title','Reviewer','Extra1','Extra2']
-reviews_df.head(10)
+reviews_df.columns = ['Hotel Name','Address','Reviewer','Review Title','Review','Review Count','Help Count','Hotel Count','Location','Rating Date','Rating']
+#print(reviews_df.head(10))
 
 #if error converting to float then there is probably an error in the row identified... text can't be converted
-#reviews_df['Review Count'] = reviews_df['Review Count'].astype(int)
-#reviews_df['Help Count'] = reviews_df['Help Count'].astype(int)
-#reviews_df['Hotel Count'] = reviews_df['Hotel Count'].astype(int)
+reviews_df['Review Count'] = reviews_df['Review Count'].astype(float) 
 
-#Drop unwanted rows (for 'NaN' in Help Count)
-reviews_df = reviews_df.drop(reviews_df[pd.isnull(reviews_df['Help Count'])].index)
+#for error debugging - finds row with error text in "review count" column
+#reviews_df.loc[reviews_df['Review Count'] == 'Westport  Connecticut']
+
+reviews_df['Help Count'] = reviews_df['Help Count'].astype(int)
+
+#for Nan in 'Help Count'
+#reviews_df['Help Count'].isnull().sum() #count Nan's
+#nans = reviews_df[pd.isnull(reviews_df['Help Count'])]
+#nans
+
+#Drop unwanted rows with .drop(****).index (this specific code is for 'NaN' in Help Count)
+#reviews_df = reviews_df.drop(reviews_df[pd.isnull(reviews_df['Help Count'])].index)
+
+#check for any NaNs remaining
+#reviews_df[pd.isnull(reviews_df['Help Count'])]
+
+
+reviews_df['Hotel Count'] = reviews_df['Hotel Count'].astype(int)
+#reviews_df = reviews_df.drop(reviews_df[pd.isnull(reviews_df['Hotel Count'])].index)
 
 #print(reviews_df.dtypes)
 
