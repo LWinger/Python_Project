@@ -15,4 +15,5 @@ for file_ in allFiles:
     list_.append(df)
     frame = pd.concat(list_,axis =0)
 
+frame = frame[['Organization','Address','Reviewer','Review Title','Review','Review Count','Help Count','Hotel Count','Location','Rating Date','Rating']]
 frame.to_csv('Review Data.csv',index = False)
