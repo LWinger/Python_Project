@@ -15,4 +15,4 @@ for file_ in allFiles:
     list_.append(df)
     frame = pd.concat(list_,axis =0)
 
-frame.to_csv('Review Data.csv')
+frame.to_csv('Review Data.csv',index = False)
