@@ -1,0 +1,37 @@
+import pandas as pd
+import numpy as np
+hotels_df = pd.read_csv('Hotel Data.csv')
+hotels_df.columns = ['ID','Hotel', 'Hotel Link','Number Reviews','Review Link','Rating','Rank']
+
+#clean Hotels Data Frame
+hotels_df['Number Reviews'] = hotels_df['Number Reviews'].astype(str).str.split().str.get(0).str.replace(",","")
+hotels_df['Number Reviews'] = hotels_df['Number Reviews'].astype(int)
+
+hotels_df['Rating'] = hotels_df['Rating'].astype(str).str.split().str.get(0)
+hotels_df['Rating'] = hotels_df['Rating'].astype(float)
+
+hotels_df['Rank'] = hotels_df['Rank'].astype(str).str.split().str.get(0).str.replace("#","")
+hotels_df['Rank'] = hotels_df['Rank'].astype(float)
+
+print(hotels_df.dtypes)
+
+#if error reading file then maybe extra columns in line identified in last line of error message
+reviews_df = pd.read_csv('Reviews_Rank21-30.csv')
+reviews_df.columns = ['Hotel', 'Address','Reviewer','Review Title','Review','Review Count','Help Count','Hotel Count','Location','Rating Date','Rating']
+
+#if error converting to float then there is probably an error in the row identified... text can't be converted
+reviews_df['Review Count'] = reviews_df['Review Count'].astype(int)
+reviews_df['Help Count'] = reviews_df['Help Count'].astype(int)
+reviews_df['Hotel Count'] = reviews_df['Hotel Count'].astype(int)
+
+print(reviews_df.dtypes)
+
+#count number of reviews scrapped
+print(len(reviews_df['Hotel']),'Reviews Scraped')
+
+#count number of reviews in tripadvisor
+print(sum(hotels_df[20:30]['Number Reviews']),'Reviews in Tripadvisor')
+
+#error
+error = sum(hotels_df[20:30]['Number Reviews'])-len(reviews_df['Hotel'])
+print(error, 'Reviews Missing')
