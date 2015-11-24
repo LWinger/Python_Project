@@ -119,5 +119,5 @@ for theurl in WebSites:
     
 file.close()
 
-#Ouput the Error Links
+#Ouput the error Links
 errorlist
