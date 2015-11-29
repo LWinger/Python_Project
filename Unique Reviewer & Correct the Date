@@ -1,0 +1,45 @@
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('Review Data Final Version.csv')
+df.columns = ['Hotel Name','Address', 'Reviewer','Review Title','Review', 'Review Count','Help Count','Hotel Count','Location','Rating Date','Rating']
+
+#Reviewer - assign ID to each unique user
+Reviewers=pd.DataFrame(columns=['Reviewer ID',"Reviewer"])
+Reviewers["Reviewer ID"]=np.arange(len(df.Reviewer.unique()))
+Reviewers["Reviewer"]=df.Reviewer.unique()
+#Write the new dataframe into a csv file
+Reviewers.to_csv('Reviewer.csv', encoding='utf-8')
+
+#Correct the date
+import datetime as dt
+df2 = df['Rating Date']
+for i in df2:
+    try:
+        df2[df2==i]=dt.datetime.strptime(i,'%B %d %Y').date()
+    except ValueError:
+        if i == 'today':
+            df2[df2==i]=dt.date(2015, 11,22)
+        elif i == 'yesterday':
+            df2[df2==i]=dt.datetime.strptime('November 21 2015','%B %d %Y').date()
+        elif i == '2 days ago':
+            df2[df2==i]=dt.datetime.strptime('November 20 2015','%B %d %Y').date()
+        elif i == '3 days ago':
+            df2[df2==i]=dt.datetime.strptime('November 19 2015','%B %d %Y').date()
+        elif i == '4 days ago':
+            df2[df2==i]=dt.datetime.strptime('November 18 2015','%B %d %Y').date()
+        elif i == '5 days ago':
+            df2[df2==i]=dt.datetime.strptime('November 17 2015','%B %d %Y').date()
+        elif i == '1 week ago':
+            df2[df2==i]=dt.datetime.strptime('November 15 2015','%B %d %Y').date()
+        elif i == '2 weeks ago':
+            df2[df2==i]=dt.datetime.strptime('November 8 2015','%B %d %Y').date()
+        elif i == '3 weeks ago':
+            df2[df2==i]=dt.datetime.strptime('November 1 2015','%B %d %Y').date()
+        elif i == '4 weeks ago':
+            df2[df2==i]=dt.datetime.strptime('October 25 2015','%B %d %Y').date()
+        else: 
+            df2[df2==i]=dt.datetime.strptime('October 18 2015','%B %d %Y').date()
+    except TypeError:
+        continue
+df.to_csv('Review Data Final_Date Corrected.csv', encoding='utf-8')
