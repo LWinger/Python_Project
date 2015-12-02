@@ -1,0 +1,36 @@
+import pandas as pd
+#import pandas.io.data as iod
+from pandas_datareader import data
+#Also import numpy and matplotlib. Because ....
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mp
+import re
+import time
+from collections import Counter
+
+review_data = pd.read_csv('Review Data Final Version.csv')
+
+loc=review_data['Location'].tolist()
+
+def location(x):
+    if not pd.isnull(x):
+        if len(re.findall(r'\w+', x))>1:
+            return(x[x.find('  ')+2:])
+        else:
+            return (x)
+
+
+for i in range(0,len(loc)):
+    loc[i]=location(loc[i])
+
+
+review_data['Loc']=loc
+#grp1=review_data.groupby('Hotel name')
+
+
+x=np.asarray(list(Counter(loc).keys())) # equals to list(set(words))
+y=np.asarray(list(Counter(loc).values())) # counts the elements' frequency
+z=pd.DataFrame({'location':x,'freq':y})
+z=z.sort(['freq'],ascending=[0])
