@@ -34,3 +34,20 @@ x=np.asarray(list(Counter(loc).keys())) # equals to list(set(words))
 y=np.asarray(list(Counter(loc).values())) # counts the elements' frequency
 z=pd.DataFrame({'location':x,'freq':y})
 z=z.sort(['freq'],ascending=[0])
+
+
+a=review_data['Hotel Name'].unique()
+z2=pd.DataFrame()
+for i in range(0,len(a)):
+    new_df=review_data[review_data['Hotel Name']==a[i]]
+    new_df=new_df['Loc']
+    x1=np.asarray(list(Counter(new_df).keys())) # equals to list(set(words))
+    y1=np.asarray(list(Counter(new_df).values())) # counts the elements' frequency
+    z1=pd.DataFrame({'location':x1,'freq':y1})
+    z1=z1.sort(['freq'],ascending=[0])
+    z1=z1.dropna()
+    #z1=z1[z1.location!=None]
+    Hotel=np.repeat(a[i],len(z1))
+    z1['Hotel Name']=Hotel
+    z2=pd.concat([z2,z1])
+print(z2)
