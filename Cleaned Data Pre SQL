@@ -1,0 +1,101 @@
+#kernal 1
+import pandas as pd
+import numpy as np
+hotel_data = pd.read_csv('Hotel Data.csv')
+hotel_data.columns = ['Hotel ID','Hotel', 'Hotel Link','Number Reviews','Review Link','Hotel Rating','Hotel Rank']
+
+#clean Hotels Data Frame
+hotel_data['Number Reviews'] = hotel_data['Number Reviews'].astype(str).str.split().str.get(0).str.replace(",","")
+hotel_data['Number Reviews'] = hotel_data['Number Reviews'].astype(int)
+
+hotel_data['Hotel Rating'] = hotel_data['Hotel Rating'].astype(str).str.split().str.get(0)
+hotel_data['Hotel Rating'] = hotel_data['Hotel Rating'].astype(float)
+
+hotel_data['Hotel Rank'] = hotel_data['Hotel Rank'].astype(str).str.split().str.get(0).str.replace("#","")
+hotel_data['Hotel Rank'] = hotel_data['Hotel Rank'].astype(float)
+
+hotel_data.head()
+
+#kernal 2
+print(hotel_data.dtypes)
+
+#kernal 3
+plt.scatter(hotel_data['Hotel Rank'],hotel_data['Hotel Rating'])
+
+#kernal 4
+ratings = hotel_data.groupby('Hotel Rating')
+ratings.size().plot(kind='bar')
+
+#kernal 5
+len(hotel_data['Hotel Rating'])
+
+#kernal 6
+hotel_data.tail()
+
+#kernal 7
+hotel_data['Number Reviews'].plot(kind='hist', bins=50)
+
+#kernal 8
+review_data = pd.read_csv('Review Data Final_3.csv')
+print(review_data.head(10))
+
+#kernal 9
+review_data = review_data.ix[:,0:11]
+review_data.columns = ['Hotel Name','Address','Review ID','Review Title','Review','Review Count','Help Count','Hotel Count','Location','Review Date','Rating']
+review_data.head()
+
+#kernal 10
+print(review_data.dtypes)
+
+#kernal 11
+ratings2 = review_data.groupby('Rating')
+ratings2.size().plot(kind='bar')
+
+#kernal 12
+#keep zip code only
+x = review_data['Address'].astype(str)
+x
+
+#kernal 13
+import re
+
+pattern = '\d\d\d\d\d'
+regex = re.compile(pattern)
+
+y = []
+
+for i in x:
+    y.append(regex.findall(i))
+y
+
+#kernal 14
+review_data['Address'] = y
+review_data.head()
+
+#kernal 15
+a = review_data['Address'].astype(str).str.replace("[","")
+review_data['Address'] = a.str.replace("]","")
+review_data['Address'] = review_data['Address'].astype(str).str.replace("'","")
+review_data.fillna(value=np.nan)
+
+#kernal 16
+review_data.isnull().sum()
+
+#kernal 17
+review_data.loc[review_data['Address'] == '']
+
+#kernal 18
+#drop Elk Hotel because only 3 reviews and hotel is currently closed
+review_data = review_data.drop(review_data.loc[review_data['Hotel Name'] == 'Elk Hotel'].index)
+
+#the jane zip = 10014, only missing the jane zip now
+review_data['Address'] = review_data['Address'].astype(str).str.replace("","10014")
+
+review_data.loc[review_data['Address'] == '']
+
+#kernal 19
+review_data['Address'] = review_data['Address'].astype(float)
+#replace blanks with NaN & summarize
+review_data.replace(r'\s+', np.nan, regex=True)
+review_data.isnull().sum()
+
