@@ -99,3 +99,22 @@ review_data['Address'] = review_data['Address'].astype(float)
 review_data.replace(r'\s+', np.nan, regex=True)
 review_data.isnull().sum()
 
+
+
+
+#make 6 dataframes for MySQL database
+
+#make Table 1: Hotels
+
+hotels = review_data['Hotel Name'].unique()
+len(hotels)
+hotels = pd.DataFrame(hotels)
+
+Hotel_Table = hotel_data.join(hotels, how = 'right')
+
+zipcode = review_data.ix[:,0:2]
+zip_unique = zipcode.drop_duplicates()
+zip_unique['Hotel'] = zip_unique['Hotel Name']
+zip_unique = zip_unique.ix[:,1:3]
+
+Hotel_Final = Hotel_Table.join(zip_unique,on = 'Hotel',how = 'left')
