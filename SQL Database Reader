@@ -15,3 +15,13 @@ for row in curr:
 import pandas as pd
 hotels = pd.read_sql('select * from NYC_sleep_eat.hotels;', conn)
 reviews = pd.read_sql('select * from NYC_sleep_eat.reviews;', conn)
+
+#clean review date
+a = reviews['review_date'].astype(str).str.split().str.get(0).str[2:]
+reviews['review_date'] = str('20') + a
+
+reviews['review_date'] = pd.to_datetime(reviews['review_date'])
+
+print(reviews.dtypes)
+print(hotels.dtypes)
+
