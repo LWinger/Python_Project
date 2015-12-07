@@ -1,3 +1,5 @@
+nyc_hoods = pd.merge(hotels, neighborhood, on=['zip', 'zip'])
+
 #ask the user to type the neighborhood
 print("The neighborhoods include: 'Gramercy Park and Murray Hill', 'Chelsea and Clinton','Greenwich Village and Soho', 'Upper West Side', 'Upper East Side','Lower Manhattan', 'Inwood and Washington Heights','Lower East Side', 'Sunset Park', 'North Queens', 'Central Harlem','East Harlem'")
 neighbor=input("Please enter the neighborhood you want to stay in: ")
