@@ -5,6 +5,7 @@ import pymysql #Connector library for mysql
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 #Set up a connection with the server
 conn = pymysql.connect(host='localhost', port=3307, user='root')
@@ -94,4 +95,9 @@ plt.xlabel('Borough')
 
 #new kernal
 NYC_hoods.groupby('neighborhood').count()
+
+#new kernal
+#average review ratings over time
+subset = reviews.loc[:,['review_date','rating']]
+average = subset.groupby(['review_date']).aggregate(np.mean).plot()
 
