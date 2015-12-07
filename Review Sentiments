@@ -1,0 +1,61 @@
+%matplotlib inline
+
+#connect to mySQL & import necessary packages
+import pymysql #Connector library for mysql
+import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import urllib
+import nltk
+
+#Set up a connection with the server
+conn = pymysql.connect(host='localhost', port=3307, user='root')
+#And a cursor object that will serve as a virtual 'cursor'
+curr = conn.cursor()
+
+reviews = pd.read_sql('select * from NYC_sleep_eat.reviews;', conn)
+
+#clean review date
+a = reviews['review_date'].astype(str).str.split().str.get(0).str[2:]
+reviews['review_date'] = str('20') + a
+reviews['review_date'] = pd.to_datetime(reviews['review_date'])
+
+lower = reviews['review'].astype(str).str.lower().values.tolist()
+
+#drop 'new york'
+rev_list = []
+j = 0
+b = 0
+while (j < len(lower)):
+    b = lower[j].replace('new york','')
+    rev_list.append(b)
+    j+=1
+
+
+#just for one review right now (need to put everything below into a function & for loop)
+from nltk import word_tokenize
+words = nltk.Text(word_tokenize(str(rev_list[1])))
+print(len(words))
+
+from nltk.corpus import wordnet as wn
+adjectives = []
+
+for eachword in words:
+    ss = wn.synsets(eachword)
+    if len(ss) > 0:
+        pos = [xx.pos() for xx in ss]
+        if 's' in pos:
+            adjectives.append(eachword)
+            
+
+len(adjectives)
+
+adjectives
+
+
+#get sentiment dictionary from Wislon et al.
+files=['negative.txt','positive.txt']
+path='http://www.unc.edu/~ncaren/haphazard/'
+for file_name in files:
+    urllib.urlretrieve(path+file_name,file_name)
