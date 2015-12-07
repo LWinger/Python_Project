@@ -1,0 +1,21 @@
+#ask the user to type the neighborhood
+print("The neighborhoods include: 'Gramercy Park and Murray Hill', 'Chelsea and Clinton','Greenwich Village and Soho', 'Upper West Side', 'Upper East Side','Lower Manhattan', 'Inwood and Washington Heights','Lower East Side', 'Sunset Park', 'North Queens', 'Central Harlem','East Harlem'")
+neighbor=input("Please enter the neighborhood you want to stay in: ")
+
+#find the zip codes in that neighborhood
+zip_list=set(nyc_hoods[nyc_hoods.neighborhood==neighbor]["zip"])
+
+#ask the user to type in the zip
+print("You chose",neighbor,"and",neighbor,"has folowing zip codes:",zip_list)
+zip_code=input("If you have a specific zip code zone in mind, please indicate it: ")
+
+#find the top5 hotels under taht zipcode by the ranking
+import pandas as pd
+nyc_hoods["zipcode"]=nyc_hoods["zip"]
+nyc_hoods["zipcode"]=nyc_hoods["zipcode"].astype(str)
+target_hotels=nyc_hoods[nyc_hoods.zipcode==zip_code]
+target_hotels=pd.DataFrame.sort(target_hotels,columns="hotel_rank")
+top_5=target_hotels[0:5]
+top_5.ix[:,[1,3]]
+
+#What if the user doesn't type in a zip code
