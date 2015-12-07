@@ -33,29 +33,70 @@ while (j < len(lower)):
     j+=1
 
 
-#just for one review right now (need to put everything below into a function & for loop)
-from nltk import word_tokenize
-words = nltk.Text(word_tokenize(str(rev_list[1])))
-print(len(words))
+#get sentiment dictionary from Wislon et al. if you don't have it
+#files=['negative.txt','positive.txt']
+#path='http://www.unc.edu/~ncaren/haphazard/'
+#for file_name in files:
+#    urllib.request.urlretrieve(path+file_name,file_name)
 
+pos_sent = open("positive.txt").read()
+positive_words = pos_sent.split('\n')
+
+neg_sent = open("negative.txt").read()
+negative_words = neg_sent.split('\n')
+
+
+#define get sentiment function
+def get_sentiment(text):
+    positive_counter = 0
+    negative_counter = 0
+    positive_counts=[]
+    negative_counts=[]
+    sentiment = []
+
+    for word in text:
+        if word in positive_words:
+            positive_counter = positive_counter+1
+    if len(text)> 0:
+        positive_counts.append(positive_counter/len(text))
+    else:
+        positive_counts.append('')
+
+    for word in words:
+        if word in negative_words:
+            negative_counter = negative_counter+1
+    if len(text)> 0:
+        negative_counts.append(negative_counter/len(text))
+    else:
+        negative_counts.append('')
+
+    sentiment = [positive_counts,negative_counts]
+
+    return sentiment
+
+#new kernal
+from nltk import sent_tokenize,word_tokenize
 from nltk.corpus import wordnet as wn
-adjectives = []
 
-for eachword in words:
-    ss = wn.synsets(eachword)
-    if len(ss) > 0:
-        pos = [xx.pos() for xx in ss]
-        if 's' in pos:
-            adjectives.append(eachword)
-            
+#new kernal
+#careful because the following loop runs for all 200,000+ reviews....
+words_sentiments = []
+adj_sentiments = []
 
-len(adjectives)
+for i in rev_list:
+    adjectives = []
+    words = nltk.Text(word_tokenize(str(i)))
 
-adjectives
+    for eachword in words:
+        ss = wn.synsets(eachword)
+        if len(ss) > 0:
+            pos = [xx.pos() for xx in ss]
+            if 's' in pos:
+                adjectives.append(eachword)
+    
+    x = get_sentiment(adjectives)
+    adj_sentiments.append(x)
+    
+    y = get_sentiment(words)
+    words_sentiments.append(y)
 
-
-#get sentiment dictionary from Wislon et al.
-files=['negative.txt','positive.txt']
-path='http://www.unc.edu/~ncaren/haphazard/'
-for file_name in files:
-    urllib.urlretrieve(path+file_name,file_name)
