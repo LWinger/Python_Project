@@ -19,6 +19,7 @@ for row in curr:
 
 hotels = pd.read_sql('select * from NYC_sleep_eat.hotels;', conn)
 reviews = pd.read_sql('select * from NYC_sleep_eat.reviews;', conn)
+neighborhoods = pd.read_sql('select * from NYC_sleep_eat.neighborhoods;', conn)
 
 #clean review date
 a = reviews['review_date'].astype(str).str.split().str.get(0).str[2:]
@@ -58,4 +59,39 @@ ratings2.size().plot(kind='bar')
 plt.ylabel('Number of Reviews')
 plt.xlabel('Individual Reviewer Rating')
 
+#new kernal
+fig, axs = plt.subplots(1,2,figsize=(15, 5))
+zipcodes = hotels.groupby('zip')
+zipcodes.size().plot(ax=axs[0],kind='bar')
+axs[0].set_ylabel('Number of Hotels')
+axs[0].set_xlabel('Zip Code')
+a = pd.merge(hotels, reviews, on=['hotel_id', 'hotel_id'])
+zipcodes2 = a.groupby('zip')
+zipcodes2.size().plot(ax=axs[1],kind='bar')
+plt.ylabel('Number of Reviews')
+plt.xlabel('Zip Code')
+
+#new kernal
+NYC_hoods = pd.merge(hotels, neighborhoods, on=['zip', 'zip'])
+
+#new kernal
+fig, axs = plt.subplots(1,2,figsize=(15, 5))
+hood_count = NYC_hoods.groupby('neighborhood')
+hood_count.size().plot(ax=axs[0],kind='bar')
+axs[0].set_ylabel('Number of Hotels')
+axs[0].set_xlabel('Neighborhood')
+b = pd.merge(NYC_hoods, reviews, on=['hotel_id', 'hotel_id'])
+zipcodes2 = b.groupby('neighborhood')
+zipcodes2.size().plot(ax=axs[1],kind='bar')
+plt.ylabel('Number of Reviews')
+plt.xlabel('Neighborhood')
+
+#new kernal
+hood_count = NYC_hoods.groupby('borough')
+hood_count.size().plot(kind='bar')
+plt.ylabel('Number of Hotels')
+plt.xlabel('Borough')
+
+#new kernal
+NYC_hoods.groupby('neighborhood').count()
 
