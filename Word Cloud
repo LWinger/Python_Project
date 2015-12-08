@@ -1,0 +1,84 @@
+import nltk
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import string
+
+import pymysql #Connector library for mysql
+import matplotlib
+import matplotlib.pyplot as plt
+
+from nltk import sent_tokenize,word_tokenize
+from nltk.corpus import wordnet as wn
+
+from os import path
+from wordcloud import WordCloud, STOPWORDS
+
+######## The following is the same as the SQL database code ############
+#Set up a connection with the server
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root')
+#And a cursor object that will serve as a virtual 'cursor'
+curr = conn.cursor()
+curr.execute('show databases;')
+
+#check connection
+for row in curr:
+    print(row)
+
+hotels = pd.read_sql('select * from NYC_sleep_eat.hotels;', conn)
+reviews = pd.read_sql('select * from NYC_sleep_eat.reviews;', conn)
+
+#clean review date
+a = reviews['review_date'].astype(str).str.split().str.get(0).str[2:]
+reviews['review_date'] = str('20') + a
+reviews['review_date'] = pd.to_datetime(reviews['review_date'])
+
+######### Plot Word Cloud
+rtdata = reviews[reviews.hotel_id==316]['review_title']
+
+#remove "NYC" since "new" is also adjective
+data= str()
+for i in range(0,len(rtdata)):
+    b= str(rtdata.iloc[i])
+    b= b.replace("New York", "")
+    b= b.replace("New York City", "")
+    b= b.replace("New-York", "")
+    data= data + " " + b
+
+#remove punctuation in the string
+asking=data
+asking = ''.join([c for c in asking if c not in (string.punctuation)])
+review=asking.split()
+type(review)
+
+####### 2 ways to get the adjectives, to be decided which way to choose:
+### 1
+sent = " ".join(str(x) for x in review)
+#print(sent)
+text = word_tokenize(sent)
+
+f=nltk.pos_tag(text)
+adjectives = []
+for i in range(0,len(f)):
+    if f[i][1]=="JJ":
+        adjectives.append(f[i][0])
+print(adjectives1)
+
+### 2
+adjectives1 = []
+for eachword in text:
+    if len(eachword)>2:
+        ss = wn.synsets(eachword)
+        if len(ss) > 0:
+            pos = [xx.pos() for xx in ss]
+            if 's' in pos:
+                adjectives1.append(eachword)
+print(adjectives)
+
+# Plot the wordcloud and save to your local drive
+wordcloud = WordCloud().generate(' '.join(adjectives1))
+img=plt.imshow(wordcloud)
+plt.axis("off")
+ 
+#or save as png
+img.write_png("wordcloud.png")
