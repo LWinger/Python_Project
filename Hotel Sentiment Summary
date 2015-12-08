@@ -1,0 +1,56 @@
+%matplotlib inline
+
+#connect to mySQL & import necessary packages
+import pymysql #Connector library for mysql
+import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import nltk
+
+#Set up a connection with the server
+conn = pymysql.connect(host='localhost', port=3307, user='root')
+#And a cursor object that will serve as a virtual 'cursor'
+curr = conn.cursor()
+
+reviews = pd.read_sql('select * from NYC_sleep_eat.reviews;', conn)
+sentiments = pd.read_sql('select * from NYC_sleep_eat.sentiments;', conn)
+
+#clean review date
+a = reviews['review_date'].astype(str).str.split().str.get(0).str[2:]
+reviews['review_date'] = str('20') + a
+reviews['review_date'] = pd.to_datetime(reviews['review_date'])
+
+rev_sents = pd.merge(reviews, sentiments, on=['review_id', 'review_id'])
+
+#average review sentiments over time
+subset = rev_sents.loc[:,['review_date','negative']]
+average = subset.groupby(['review_date']).aggregate(np.mean).plot()
+plt.ylabel('Average Negative Proportion in Review Text For All Hotels')
+plt.xlabel('Time')
+
+fig, axs = plt.subplots(1,2,figsize=(15, 5))
+
+#average review sentiments for hotel
+subset = rev_sents.loc[:,['hotel_id','positive']]
+average = subset.groupby(['hotel_id']).aggregate(np.mean).plot(ax=axs[0])
+axs[0].set_ylabel('Average Positive Proportion in Review Text')
+axs[0].set_xlabel('Hotel Rank')
+
+#average review sentiments for hotel
+subset = rev_sents.loc[:,['hotel_id','negative']]
+average = subset.groupby(['hotel_id']).aggregate(np.mean).plot(ax=axs[1])
+axs[1].set_ylabel('Average Negative Proportion in Review Text')
+axs[1].set_xlabel('Hotel Rank')
+
+hotels = pd.read_sql('select * from NYC_sleep_eat.hotels;', conn)
+rev_sents2 = rev_sents.loc[:,['hotel_id','positive','negative']]
+rev_sents2.groupby(['hotel_id']).aggregate(np.mean).sort('positive', ascending = [0]).head()
+
+rev_sents2.groupby(['hotel_id']).aggregate(np.mean).sort('negative', ascending = [0]).head()
+
+c = (381,14,150,231,249)
+hotels.loc[hotels['hotel_id'].isin(c)]
+
+c = (423,441,450,439,449)
+hotels.loc[hotels['hotel_id'].isin(c)]
