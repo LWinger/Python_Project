@@ -100,3 +100,72 @@ for i in rev_list:
     y = get_sentiment(words)
     words_sentiments.append(y)
 
+#write to csv
+words_table = pd.DataFrame(words_sentiments)
+words_table[0] = words_table[0].astype(str).str.replace("[","")
+words_table[0] = words_table[0].astype(str).str.replace("]","")
+words_table[1] = words_table[1].astype(str).str.replace("[","")
+words_table[1] = words_table[1].astype(str).str.replace("]","")
+words_table.columns = ['positive','negative']
+
+#add review id to data frame
+review_id = reviews['review_id']
+review_sent_word = pd.concat([review_id, words_table], axis=1)
+review_sent_word.to_csv('words_sentiments.csv', encoding='utf-8')
+
+adj_table = pd.DataFrame(adj_sentiments)
+adj_table[0] = adj_table[0].astype(str).str.replace("[","")
+adj_table[0] = adj_table[0].astype(str).str.replace("]","")
+adj_table[0] = adj_table[0].astype(str).str.replace('"',"0")
+adj_table[1] = adj_table[1].astype(str).str.replace("[","")
+adj_table[1] = adj_table[1].astype(str).str.replace("]","")
+adj_table[1] = adj_table[1].astype(str).str.replace('"',"0")
+adj_table.columns = ['positive','negative']
+
+#add review id to data frame
+review_sent_adj = pd.concat([review_id, adj_table], axis=1)
+review_sent_adj.to_csv('adj_sentiments.csv', encoding='utf-8')
+
+import matplotlib.pyplot as plt
+
+adj = pd.merge(review_sent_adj, reviews, on=['review_id', 'review_id'])
+wrd = pd.merge(review_sent_word, reviews, on=['review_id', 'review_id'])
+
+groups = adj.groupby('rating')
+
+# Plot
+plt.rcParams.update(pd.tools.plotting.mpl_stylesheet)
+colors = pd.tools.plotting._get_standard_colors(len(groups), color_type='random')
+
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.set_color_cycle(colors)
+ax.margins(0.05)
+for name, group in groups:
+    ax.plot(group.negative, group.positive, marker='o', linestyle='', ms=6, label=name)
+ax.legend(numpoints=1, loc='upper right')
+plt.ylabel('positive sentiment proportion')
+plt.xlabel('negative sentiment proportion')
+plt.xlim((-0.05,1.05))
+plt.ylim((-0.05,1.05))
+
+plt.show()
+
+
+groups = wrd.groupby('rating')
+
+# Plot
+plt.rcParams.update(pd.tools.plotting.mpl_stylesheet)
+colors = pd.tools.plotting._get_standard_colors(len(groups), color_type='random')
+
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.set_color_cycle(colors)
+ax.margins(0.05)
+for name, group in groups:
+    ax.plot(group.negative, group.positive, marker='o', linestyle='', ms=6, label=name)
+ax.legend(numpoints=1, loc='upper right')
+plt.ylabel('positive sentiment proportion')
+plt.xlabel('negative sentiment proportion')
+plt.xlim((-0.05,0.3))
+plt.ylim((-0.05,0.3))
+
+plt.show()
