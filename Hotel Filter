@@ -112,4 +112,12 @@ elif len(hotel_rank)==4:
     hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0],hotel_rank[2][0],hotel_rank[3][0]]
 else:
     hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0],hotel_rank[2][0],hotel_rank[3][0],hotel_rank[4][0]]
+
+zero=0
+for i in range(len(hotel_rank_5)):
+    if hotel_rank[i-1][1]==0:
+        zero += 1
+if zero>0:
+    print('The last',zero,'hotel(s) do not have advatages on the criteria you chose according to the reviews. They(It) become(s) our recommendation because their have higher rank on TripAdviser.')
+
 hotel_rank_5
