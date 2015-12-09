@@ -22,15 +22,24 @@ a = reviews['review_date'].astype(str).str.split().str.get(0).str[2:]
 reviews['review_date'] = str('20') + a
 
 reviews['review_date'] = pd.to_datetime(reviews['review_date'])
-
-print(reviews.dtypes)
-print(hotels.dtypes)
-print(neighborhood.dtypes)
-
+——————————————————————————————————————————————————————————————————————————————————
 nyc_hoods = pd.merge(hotels, neighborhood, on=['zip', 'zip'])
+merge_reviews=pd.merge(hotels, reviews, on=['hotel_id', 'hotel_id'])
+nyc_hoods["zipcode"]=nyc_hoods["zip"]
+nyc_hoods["zipcode"]=nyc_hoods["zipcode"].astype(str)
+criteria_list=('great location', 'clean', 'breakfast', 'friendly/helpful staff', 'restaurants'
+                ,'subway lines', 'central park' ,'financial district', 'times square', 'china town','5th avenue'
+                ,'penn station')
 
+#packages
+import nltk
+from nltk import sent_tokenize,word_tokenize
+from nltk import FreqDist
+import operator
+——————————————————————————————————————————————————————————————————————————————————
 #ask the user to type the neighborhood
-print("The neighborhoods include: 'Gramercy Park and Murray Hill', 'Chelsea and Clinton','Greenwich Village and Soho', 'Upper West Side', 'Upper East Side','Lower Manhattan', 'Inwood and Washington Heights','Lower East Side', 'Sunset Park', 'North Queens', 'Central Harlem','East Harlem'")
+all_neighborhoods=nyc_hoods["neighborhood"].unique()
+print("The neighborhoods include:", all_neighborhoods) #'Gramercy Park and Murray Hill', 'Chelsea and Clinton','Greenwich Village and Soho', 'Upper West Side', 'Upper East Side','Lower Manhattan', 'Inwood and Washington Heights','Lower East Side', 'Sunset Park', 'North Queens', 'Central Harlem','East Harlem'")
 neighbor=input("Please enter the neighborhood you want to stay in: ")
 
 #find the zip codes in that neighborhood
@@ -42,11 +51,65 @@ zip_code=input("If you have a specific zip code zone in mind, please indicate it
 
 #find the top5 hotels under taht zipcode by the ranking
 import pandas as pd
-nyc_hoods["zipcode"]=nyc_hoods["zip"]
-nyc_hoods["zipcode"]=nyc_hoods["zipcode"].astype(str)
-target_hotels=nyc_hoods[nyc_hoods.zipcode==zip_code]
+if zip_code==True:
+    target_hotels=nyc_hoods[nyc_hoods.zipcode==zip_code]
+else:
+    target_hotels=nyc_hoods[nyc_hoods.neighborhood==neighbor]
 target_hotels=pd.DataFrame.sort(target_hotels,columns="hotel_rank")
-top_5=target_hotels[0:5]
-top_5.ix[:,[1,3]]
+#top_5=target_hotels[0:5]
+#print(top_5.ix[:,[1,3]])
 
-#What if the user doesn't type in a zip code
+print("We understand you many have your own criteria in choosing a hotel, such as:", criteria_list)
+standard=input("If you are in favor of a specific criteria listed above, please indicate it here: ")
+
+hotel_ids=target_hotels["hotel_id"].tolist()
+target_reviews=merge_reviews[merge_reviews['hotel_id'].isin(hotel_ids)]
+
+lower = target_reviews['review'].astype(str).str.lower().values.tolist()
+rev_list = []
+j = 0
+b = 0
+while (j < len(lower)):
+    b = lower[j].replace('new york','').replace('!','').replace('.','').replace('hotel','').replace('...','').replace('``','').replace("''",'').replace("'",'')
+    rev_list.append(b)
+    j+=1
+    
+text=list()
+for i in range(len(rev_list)):
+    words = nltk.Text(word_tokenize(rev_list[i]))
+    for eachword in words:
+        text.append(eachword)
+text = nltk.Text(text)
+
+list_1=list()
+dictionary=dict()
+for i in hotel_ids:
+    reviews=target_reviews[target_reviews.hotel_id==i]
+    list_1.append(reviews.ix[:,[0,10]])
+#list_1
+for i in range(len(list_1)):
+    review_text=list_1[i].review.tolist()
+    x=list_1[i]['hotel_id'].values[0]
+    dictionary[x]=review_text
+    
+count = 0
+criteria_number=dict()
+for i,val in enumerate(hotel_ids):
+    for review in dictionary[val]:
+        if standard in str(review):
+            count += 1
+    criteria_number[val] = count/len(dictionary[val])
+    count = 0
+
+hotel_rank = sorted(criteria_number.items(), key=operator.itemgetter(1), reverse = True)
+if len(hotel_rank)==1:
+    hotel_rank_5=[hotel_rank[0][0]]
+elif len(hotel_rank)==2:
+    hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0]]
+elif len(hotel_rank)==3:
+    hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0],hotel_rank[2][0]]
+elif len(hotel_rank)==4:
+    hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0],hotel_rank[2][0],hotel_rank[3][0]]
+else:
+    hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0],hotel_rank[2][0],hotel_rank[3][0],hotel_rank[4][0]]
+hotel_rank_5
