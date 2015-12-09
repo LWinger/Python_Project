@@ -75,10 +75,57 @@ for eachword in text:
                 adjectives1.append(eachword)
 print(adjectives)
 
-# Plot the wordcloud and save to your local drive
-wordcloud = WordCloud().generate(' '.join(adjectives1))
-img=plt.imshow(wordcloud)
-plt.axis("off")
- 
-#or save as png
-img.write_png("wordcloud.png")
+#####Example of how to draw several word clouds in one loop#####
+# Adjective Function
+def ADJ(series):
+    data= str()
+    for i in range(0,len(series)):
+        b= str(series.iloc[i])
+        b= b.replace("b'", "")
+        b= b.replace("b\"", "")
+        b= b.replace("...   More", "")
+        b= b.replace("New York", "")
+        b= b.replace("New York City", "")
+        b= b.replace("New-York", "")
+        b= b.replace("nyc", "")
+        data= data + " " + b
+        
+    asking=data
+    asking = ''.join([c for c in asking if c not in (string.punctuation)])
+    lower = asking.lower()
+    review=lower.split()
+    type(review)
+    
+    sent = " ".join(str(x) for x in review)
+    #print(sent)
+    text = word_tokenize(sent)
+    
+    adjectives = []
+    for eachword in text:
+        if len(eachword)>2:
+            ss = wn.synsets(eachword)
+            if len(ss) > 0:
+                pos = [xx.pos() for xx in ss]
+                if 's' in pos:
+                    adjectives.append(eachword)
+               
+    return adjectives
+
+hotels = [198,199,200]    
+list1=[]
+for i in range(0,len(hotels)):
+    title = reviews[reviews.hotel_id==hotels[i]]['review_title']
+    list1.append(title)
+
+adj1=[]    
+for i in range(0,len(list1)):
+    adj = ADJ(list1[i])
+    adj1.append(adj)
+
+for i in range(0,len(adj1)):
+    wordcloud = WordCloud().generate(' '.join(adjectives))
+    img=plt.imshow(wordcloud)
+    plt.axis("off")
+
+    #save as png
+    img.write_png("wordcloud" + str(i) + ".png")
