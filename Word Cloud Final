@@ -1,0 +1,113 @@
+import nltk
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import string
+
+%matplotlib inline 
+import pymysql #Connector library for mysql
+import matplotlib
+import matplotlib.pyplot as plt
+
+from nltk import sent_tokenize,word_tokenize
+from nltk.corpus import wordnet as wn
+
+from os import path
+from wordcloud import WordCloud, STOPWORDS
+from nltk.collocations import *
+from scipy.misc import imread
+
+#Set up a connection with the server
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root')
+#And a cursor object that will serve as a virtual 'cursor'
+curr = conn.cursor()
+curr.execute('show databases;')
+
+#check connection
+for row in curr:
+    print(row)
+    
+    
+hotels = pd.read_sql('select * from NYC_sleep_eat.hotels;', conn)
+reviews = pd.read_sql('select * from NYC_sleep_eat.reviews;', conn)
+
+#clean review date
+a = reviews['review_date'].astype(str).str.split().str.get(0).str[2:]
+reviews['review_date'] = str('20') + a
+reviews['review_date'] = pd.to_datetime(reviews['review_date'])
+
+
+# Adjective
+import re
+
+def ADJ(ses):
+    
+    data= str()
+    for i in range(0,len(ses)):
+        b= str(ses.iloc[i]).lower()
+        b= b.replace("b'", "")
+        b= b.replace("b\"", "")
+        b= b.replace("...   more", "")
+        b= b.replace("new york", "")
+        b= b.replace("new york city", "")
+        b= b.replace("new-york", "")
+        b= b.replace("nyc", "")
+        b= re.sub(r"great\s*", r"great", b)
+        b= re.sub(r"good\s*", r"good", b)
+        #print(b)
+        data= data + " " + b
+        
+    asking=data
+    asking = ''.join([c for c in asking if c not in (string.punctuation)])
+    review=asking.split()
+    type(review)
+    
+    sent = " ".join(str(x) for x in review)
+    #print(sent)
+    
+    
+    adjectives = []
+    
+    text = word_tokenize(sent)
+    f=nltk.pos_tag(text)
+    adjectives = []
+    for i in range(0,len(f)):
+        if f[i][1]=="JJ":
+            adjectives.append(f[i][0])
+    #print(adjectives)
+    #for eachword in text:
+    #    if len(eachword)>2:
+    #        ss = wn.synsets(eachword)
+    #        if len(ss) > 0:
+    #            pos = [xx.pos() for xx in ss]
+    #            if 's' in pos:
+    #                adjectives.append(eachword)
+    #print (adjectives)
+    
+    adjectives += re.findall(r'great\w+', sent)
+    #print(adjectives)
+    return adjectives
+    
+    
+    hotels = [100,199,200] 
+list1=[]
+for i in range(0,len(hotels)):
+    title = reviews[reviews.hotel_id==hotels[i]]['review']
+    list1.append(title)
+
+adj1=[]    
+for i in range(0,len(list1)):
+    adj = ADJ(list1[i])
+    adj1.append(adj)
+#print(adj1)
+
+for i in range(0,len(adj1)):
+    if not adj1[i]:
+        continue
+    wordcloud = WordCloud(font_path='/Users/Cynthia/Desktop/Columbia/cabin-sketch.regular.ttf',
+                          stopwords=STOPWORDS,background_color='white').generate(' '.join(adj1[i]))
+    img=plt.imshow(wordcloud)
+    plt.axis("off")
+
+    #save as png
+    img.write_png("wordcloud" + str(i) + ".png")
