@@ -1,0 +1,185 @@
+%matplotlib inline
+
+#connect to mySQL
+import pymysql #Connector library for mysql
+import matplotlib
+import matplotlib.pyplot as plt
+
+import pandas as pd
+import numpy as np
+
+import nltk
+from nltk import sent_tokenize,word_tokenize
+from nltk import FreqDist
+from nltk.corpus import wordnet as wn
+from nltk.collocations import *
+
+import operator
+import string
+from os import path
+from wordcloud import WordCloud, STOPWORDS
+import re
+
+#Set up a connection with the server
+conn = pymysql.connect(host='localhost', port=3307, user='root')
+#And a cursor object that will serve as a virtual 'cursor'
+curr = conn.cursor()
+
+hotels = pd.read_sql('select * from nyc_sleep_eat.hotels;', conn)
+reviews = pd.read_sql('select * from nyc_sleep_eat.reviews;', conn)
+neighborhood = pd.read_sql('select * from nyc_sleep_eat.neighborhoods;', conn)
+sentiments = pd.read_sql('select * from NYC_sleep_eat.sentiments;', conn)
+
+#clean review date
+a = reviews['review_date'].astype(str).str.split().str.get(0).str[2:]
+reviews['review_date'] = str('20') + a
+reviews['review_date'] = pd.to_datetime(reviews['review_date'])
+
+#merge sentiments and reviews
+reviews = pd.merge(reviews, sentiments, on=['review_id', 'review_id'])
+
+#drop hotels with less than 10 reviews
+hotels = hotels[hotels.number_reviews > 11]
+to_drop = hotels[hotels.number_reviews < 11]
+to_drop = to_drop['hotel_id']
+reviews = reviews[~reviews['hotel_id'].isin(to_drop)]
+
+#prepare 
+nyc_hoods = pd.merge(hotels, neighborhood, on=['zip', 'zip'])
+merge_reviews=pd.merge(hotels, reviews, on=['hotel_id', 'hotel_id'])
+
+nyc_hoods["zipcode"] = nyc_hoods["zip"]
+nyc_hoods["zipcode"] = nyc_hoods["zipcode"].astype(str)
+criteria_list = ('great location', 'clean', 'breakfast', 'friendly/helpful staff', 'restaurants'
+                ,'subway lines', 'central park' ,'financial district', 'times square', 'china town','5th avenue'
+                ,'penn station')
+
+def target_hotels(specific_criteria,target_hotels):
+    hotel_ids=target_hotels["hotel_id"].tolist()
+    target_reviews=merge_reviews[merge_reviews['hotel_id'].isin(hotel_ids)]
+
+    list_1=list()
+    dictionary=dict()
+    for i in hotel_ids:
+        reviews=target_reviews[target_reviews.hotel_id==i]
+        list_1.append(reviews.ix[:,[0,10]])
+    #list_1
+    for i in range(len(list_1)):
+        review_text=list_1[i].review.tolist()
+        x=list_1[i]['hotel_id'].values[0]
+        dictionary[x]=review_text
+    
+    count = 0
+    criteria_number=dict()
+    for i,val in enumerate(hotel_ids):
+        for review in dictionary[val]:
+            if specific_criteria in str(review):
+                count += 1
+        criteria_number[val] = count/len(dictionary[val])
+        count = 0
+
+    hotel_rank = sorted(criteria_number.items(), key=operator.itemgetter(1), reverse = True)
+    if len(hotel_rank)==1:
+        hotel_rank_5=[hotel_rank[0][0]]
+    elif len(hotel_rank)==2:
+        hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0]]
+    elif len(hotel_rank)==3:
+        hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0],hotel_rank[2][0]]
+    elif len(hotel_rank)==4:
+        hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0],hotel_rank[2][0],hotel_rank[3][0]]
+    else:
+        hotel_rank_5=[hotel_rank[0][0],hotel_rank[1][0],hotel_rank[2][0],hotel_rank[3][0],hotel_rank[4][0]]
+
+    zero=0
+    for i in range(len(hotel_rank_5)):
+        if hotel_rank[i-1][1]==0:
+            zero += 1
+    if zero>0:
+        print('The last',zero,'hotel(s) do not have advatages on the criteria you chose according to the reviews. They(It) become(s) our recommendation because their have higher rank on TripAdviser.')
+    
+    return hotel_rank_5
+
+
+# Adjective Function
+def ADJ(ses):
+    
+    data= str()
+    for i in range(0,len(ses)):
+        b= str(ses.iloc[i]).lower()
+        b= b.replace("b'", "")
+        b= b.replace("b\"", "")
+        b= b.replace("...   more", "")
+        b= b.replace("new york", "")
+        b= b.replace("new york city", "")
+        b= b.replace("new-york", "")
+        b= b.replace("nyc", "")
+        b= re.sub(r"great\s*", r"great", b)
+        b= re.sub(r"good\s*", r"good", b)
+        #print(b)
+        data= data + " " + b
+        
+    asking=data
+    asking = ''.join([c for c in asking if c not in (string.punctuation)])
+    review=asking.split()
+    type(review)
+    
+    sent = " ".join(str(x) for x in review)
+    
+    adjectives = []
+    
+    text = word_tokenize(sent)
+    f=nltk.pos_tag(text)
+    adjectives = []
+    for i in range(0,len(f)):
+        if f[i][1]=="JJ":
+            adjectives.append(f[i][0])
+    
+    adjectives += re.findall(r'great\w+', sent)
+    return adjectives
+
+
+#ask the user to type the neighborhood
+all_neighborhoods=nyc_hoods["neighborhood"].unique()
+print("The neighborhoods include:", all_neighborhoods) #'Gramercy Park and Murray Hill', 'Chelsea and Clinton','Greenwich Village and Soho', 'Upper West Side', 'Upper East Side','Lower Manhattan', 'Inwood and Washington Heights','Lower East Side', 'Sunset Park', 'North Queens', 'Central Harlem','East Harlem'")
+neighbor=input("Please enter the neighborhood you want to stay in: ")
+
+#find the zip codes in that neighborhood
+zip_list=set(nyc_hoods[nyc_hoods.neighborhood==neighbor]["zip"])
+
+#ask the user to type in the zip
+print("You chose",neighbor,"and this neighborhood has the following zip codes:",zip_list)
+zip_code=input("If you have a specific zip code zone in mind, please indicate it, if not please leave this field blank: ")
+
+#find the top5 hotels under that zipcode by the ranking
+if zip_code==True:
+    targets=nyc_hoods[nyc_hoods.zipcode==zip_code]
+else:
+    targets=nyc_hoods[nyc_hoods.neighborhood==neighbor]
+targets=pd.DataFrame.sort(targets,columns="hotel_rank")
+#top_5=target_hotels[0:5]
+#print(top_5.ix[:,[1,3]])
+
+print("We understand you many have your own criteria in choosing a hotel, such as:", criteria_list)
+standard=input("If you prefer that your hotel exhibits any one of the specific criteria listed, please indicate it here: ")
+
+hotels = target_hotels(standard,targets)
+list1=[]
+for i in range(0,len(hotels)):
+    title = reviews[reviews.hotel_id==hotels[i]]['review']
+    list1.append(title)
+
+adj1=[]    
+for i in range(0,len(list1)):
+    adj = ADJ(list1[i])
+    adj1.append(adj)
+#print(adj1)
+
+for i in range(0,len(adj1)):
+    if not adj1[i]:
+        continue
+    wordcloud = WordCloud(background_color='white').generate(' '.join(adj1[i]))
+    img=plt.imshow(wordcloud)
+    plt.axis("off")
+
+    #save as png
+    img.write_png("wordcloud" + str(i) + ".png")
