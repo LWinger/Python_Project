@@ -1,0 +1,114 @@
+###################### First Kernal ##############
+fig, axs = plt.subplots(1,2,figsize=(15, 5))
+
+#hotel manager summary
+hotel = 37
+subset = hotels[hotels.hotel_id == hotel]
+
+name = str(subset['hotel_name'])
+titlename = name[(name.find(r'\w*')+1):(name.find("\n"))]
+
+##Rank vs rating scatter
+plt.scatter(hotels['hotel_rank'],hotels['hotel_rating'],color = '0.45')
+plt.scatter(subset['hotel_rank'],subset['hotel_rating'], s=450, c='r',marker=(5, 1))
+plt.title(titlename)
+plt.ylabel('Hotel Overall Rating On TripAdvisor')
+plt.xlabel('Hotel Overall Rank On TripAdvisor')
+plt.xlim((0,500))
+plt.ylim((0,6))
+
+##rating over time
+subset2 = merge_reviews.loc[:,['review_date','rating']]
+subset3 = merge_reviews.loc[:,['hotel_id','review_date','rating']]
+subset3 = subset3[subset3.hotel_id == hotel]
+subset3 = subset3.loc[:,['review_date','rating']]
+
+#drop day in date
+a = subset2['review_date'].astype(str).str
+b = pd.DataFrame(a[:7])
+subset2['review_date'] = pd.to_datetime(b['review_date'])
+c = subset3['review_date'].astype(str).str
+d = pd.DataFrame(a[:7])
+subset3['review_date'] = pd.to_datetime(b['review_date'])
+subset2.groupby(['review_date']).aggregate(np.mean).plot(ax=axs[0],color = '0.45')
+subset3.groupby(['review_date']).aggregate(np.mean).plot(ax=axs[0],color = 'red')
+axs[0].set_title(titlename)
+#axs[0].legend("a","b")
+axs[0].set_ylabel('Average NYC Hotel Ratings on TripAdvisor')
+axs[0].set_xlabel('Time')
+axs[0].legend(["global rating","rating"],loc="upper right")
+
+
+################### Second Kernal #################
+
+fig, axs = plt.subplots(1,2,figsize=(15, 5))
+
+#hotel manager summary
+hotel = 200
+subset = hotels[hotels.hotel_id == hotel]
+
+name = str(subset['hotel_name'])
+titlename = name[(name.find(r'\w*')+1):(name.find("\n"))]
+
+
+#average review sentiments for hotel
+subset4 = merge_reviews.loc[:,['hotel_id','positive']]
+subset4.groupby(['hotel_id']).aggregate(np.mean).plot(ax=axs[1],color = 'b',zorder=1)
+
+subset5 = merge_reviews.loc[:,['hotel_id','hotel_rank','positive']]
+subset5 = subset5[subset5.hotel_id == hotel]
+y = subset5.groupby(['hotel_id']).aggregate(np.mean)
+
+axs[1].scatter(y['hotel_rank'],y['positive'], s=450, c='k',marker=(5, 1),zorder=3)
+axs[1].set_title(titlename)
+axs[1].set_ylabel('Average Sentiment Proportion in Review Text')
+
+#average review sentiments for hotel
+subset6 = merge_reviews.loc[:,['hotel_id','negative']]
+subset6.groupby(['hotel_id']).aggregate(np.mean).plot(ax=axs[1],color = 'r',zorder=2)
+
+subset7 = merge_reviews.loc[:,['hotel_id','hotel_rank','negative']]
+subset7 = subset7[subset7.hotel_id == hotel]
+z = subset7.groupby(['hotel_id']).aggregate(np.mean)
+
+axs[1].scatter(z['hotel_rank'],z['negative'], s=450, c='k',marker=(5, 1),zorder=4)
+axs[1].set_xlabel('Hotel Rank')
+
+
+##rating over time
+subset8 = merge_reviews.loc[:,['review_date','positive']]
+subset9 = merge_reviews.loc[:,['hotel_id','review_date','positive']]
+subset9 = subset9[subset9.hotel_id == hotel]
+subset9 = subset9.loc[:,['review_date','positive']]
+
+#drop day in date
+a = subset8['review_date'].astype(str).str
+b = pd.DataFrame(a[:7])
+subset8['review_date'] = pd.to_datetime(b['review_date'])
+c = subset9['review_date'].astype(str).str
+d = pd.DataFrame(a[:7])
+subset9['review_date'] = pd.to_datetime(b['review_date'])
+subset8.groupby(['review_date']).aggregate(np.mean).plot(ax=axs[0],color = '0.45')
+subset9.groupby(['review_date']).aggregate(np.mean).plot(ax=axs[0],color = 'blue')
+axs[0].set_title(titlename)
+
+##rating over time
+subset10 = merge_reviews.loc[:,['review_date','negative']]
+subset11 = merge_reviews.loc[:,['hotel_id','review_date','negative']]
+subset11 = subset11[subset11.hotel_id == hotel]
+subset11 = subset11.loc[:,['review_date','negative']]
+
+#drop day in date
+a = subset10['review_date'].astype(str).str
+b = pd.DataFrame(a[:7])
+subset10['review_date'] = pd.to_datetime(b['review_date'])
+c = subset11['review_date'].astype(str).str
+d = pd.DataFrame(a[:7])
+subset11['review_date'] = pd.to_datetime(b['review_date'])
+subset10.groupby(['review_date']).aggregate(np.mean).plot(ax=axs[0],color = '0.45')
+subset11.groupby(['review_date']).aggregate(np.mean).plot(ax=axs[0],color = 'red')
+axs[0].set_title(titlename)
+axs[0].legend(["global positive","positive", "global negative","negative"],loc="upper right")
+axs[1].legend(["global positive","global negative"],loc="upper right")
+axs[0].set_ylabel('Average Sentiment Proportion in Review Text')
+axs[0].set_xlabel('Time')
