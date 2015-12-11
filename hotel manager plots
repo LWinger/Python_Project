@@ -1,3 +1,4 @@
+fig, axs = plt.subplots(4,1,figsize=(10, 30))
 
 #hotel manager summary
 hotel = 37
