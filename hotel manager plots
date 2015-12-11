@@ -1,4 +1,3 @@
-fig, axs = plt.subplots(4,1,figsize=(10, 30))
 
 #hotel manager summary
 hotel = 37
@@ -36,8 +35,9 @@ axs[0].legend(["global rating","rating"], loc = "lower right")
 axs[1].scatter(hotels['hotel_rank'],hotels['hotel_rating'],color = '0.45')
 axs[1].scatter(subset['hotel_rank'],subset['hotel_rating'], s=450, c='r',marker=(5, 1))
 axs[1].set_title(titlename)
-axs[1].set_ylabel('Hotel Overall Rating On TripAdvisor')
-axs[1].set_xlabel('Hotel Overall Rank On TripAdvisor')
+axs[1].set_ylabel('Hotel Rating')
+axs[1].set_xlabel('Hotel Rank')
+axs[1].legend(["global performance","performance"],loc="upper right")
 axs[1].set_xlim((0,500))
 axs[1].set_ylim((0,6))
 
@@ -104,4 +104,5 @@ z = subset7.groupby(['hotel_id']).aggregate(np.mean)
 
 axs[3].scatter(z['hotel_rank'],z['negative'], s=450, c='k',marker=(5, 1))
 axs[3].set_xlabel('Hotel Rank')
+axs[3].set_ylim((0,0.12))
 axs[3].legend(["global positive","global negative"],loc="upper right")
